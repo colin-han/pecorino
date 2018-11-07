@@ -4,7 +4,7 @@ ADD . /code
 RUN cd /code && \
     yarn setup && \
     yarn build && \
-    cp ./config ./dist/config
+    cp -r ./config ./dist/config
 
 WORKDIR /code/dist
 

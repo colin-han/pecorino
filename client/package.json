@@ -20,6 +20,7 @@
     "lint": "eslint .",
     "flow": "echo OK!"
   },
+  "bin": "index.js",
   "lint-staged": {
     "*.js": [
       "yarn eslint --fix",

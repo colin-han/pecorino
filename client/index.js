@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const SocketIo = require('socket.io-client');
 const yargs = require('yargs');
 const { URL } = require('url');

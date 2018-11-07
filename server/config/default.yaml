@@ -1,0 +1,17 @@
+port: 4007
+logFileRotate: 1d
+
+production: sxdqt
+version: v1.0
+env: production
+
+security:
+  key: pecorino security key
+
+etcd:
+  cluster:
+    - etcd01.pecorino.org.cn
+    - etcd02.pecorino.org.cn
+    - etcd03.pecorino.org.cn
+    - etcd04.pecorino.org.cn
+    - etcd05.pecorino.org.cn

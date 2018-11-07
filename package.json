@@ -1,0 +1,27 @@
+{
+  "name": "pecorino-root",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "setup": "yarn && node ./scripts/mdo.js yarn setup",
+    "dev-env": "yarn mkdirp devEnv/data && cd devEnvs && docker-compose up -d",
+    "init-system": "node ./scripts/mdo.js yarn init-system",
+    "flow": "node ./scripts/mdo.js yarn flow",
+    "lint": "node ./scripts/mdo.js yarn lint",
+    "lint:fix": "node ./scripts/mdo.js yarn lint:fix",
+    "test": "node ./scripts/mdo.js yarn test",
+    "test:watch": "node ./scripts/mdo.js -p yarn test:watch",
+    "build": "node ./scripts/mdo.js -p yarn build",
+    "pub": "node ./scripts/mdo.js -p yarn pub",
+    "docker:build": "node ./scripts/mdo.js yarn docker:build",
+    "docker:publish": "node ./scripts/mdo.js yarn docker:publish",
+    "precommit": "node ./scripts/mdo.js yarn lint-staged"
+  },
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "flow-bin": "^0.78.0",
+    "husky": "^0.14.3",
+    "mkdirp": "^0.5.1",
+    "nodemon": "^1.18.4"
+  }
+}

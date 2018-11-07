@@ -1,0 +1,50 @@
+{
+  "name": "pecorino-mon",
+  "version": "1.0.0",
+  "description": "Client to watch config changed in pecorino, and restart the service.",
+  "main": "index.js",
+  "author": "Colin Han <biz@colinhan.info>",
+  "license": "MIT",
+  "repository": "https://github.com/colin-han/pecorino.git",
+  "scripts": {
+    "setup": "yarn",
+    "init-system": "echo OK!",
+    "start": "echo OK!",
+    "start:dev": "echo OK!",
+    "build": "echo OK!",
+    "pub": "yarn publish --registry=http://registry.npmjs.com",
+    "docker:build": "echo OK!",
+    "docker:publish": "echo OK!",
+    "test": "echo OK!",
+    "test:watch": "echo OK!",
+    "lint": "eslint .",
+    "flow": "echo OK!"
+  },
+  "lint-staged": {
+    "*.js": [
+      "yarn eslint --fix",
+      "yarn flow focus-check",
+      "git add --force"
+    ]
+  },
+  "linters": {
+    "*.json": [
+      "prettier --write",
+      "git add --force"
+    ]
+  },
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "config": "^2.0.1",
+    "node-fetch": "^2.2.1",
+    "socket.io-client": "^2.1.1",
+    "yargs": "^12.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^5.8.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-promise": "^4.0.1",
+    "lint-staged": "^8.0.4"
+  }
+}

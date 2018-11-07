@@ -13,5 +13,4 @@ apis:
   mercurius: http://localhost:4004/message
 
 etcd:
-  cluster:
-    - "localhost:2379"
+  cluster: localhost:2379

@@ -16,8 +16,9 @@ function onBaseChange(e) {
   bindNotifyAllChange();
 }
 
-const etcd = new Etcd(cluster);
-logger.info(`Starting to connect to etcd cluster ${JSON.stringify(cluster)}.`);
+const cl = cluster.split(/\s*,\s*/);
+const etcd = new Etcd(cl);
+logger.info(`Starting to connect to etcd cluster ${JSON.stringify(cl)}.`);
 
 const rootPath = `/${production}/${version}/${env}`;
 const basePropWatcher = etcd.watcher(`${rootPath}/props`, null, { recursive: true });

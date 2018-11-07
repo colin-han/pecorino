@@ -1,3 +1,5 @@
 production: PRODUCTION
 version: VERSION
 env: CONFIG
+etcd:
+  cluster: ETCD_CLUSTER

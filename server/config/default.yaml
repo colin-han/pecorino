@@ -9,9 +9,4 @@ security:
   key: pecorino security key
 
 etcd:
-  cluster:
-    - etcd01.pecorino.org.cn
-    - etcd02.pecorino.org.cn
-    - etcd03.pecorino.org.cn
-    - etcd04.pecorino.org.cn
-    - etcd05.pecorino.org.cn
+  cluster: etcd01.pecorino.org.cn:2379,etcd02.pecorino.org.cn:2379,etcd03.pecorino.org.cn:2379

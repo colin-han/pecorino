@@ -21,7 +21,7 @@ const etcd = new Etcd(cl);
 function ignoreErrorIfExist(e) {
   if (!e) { return; }
   if (e.errorCode === 105 /* Key is already existed */) {
-    logger.log(`ETCD key "${e.error.cause}" already existed`)
+    logger.log(`ETCD key "${e.error.cause}" already existed`);
     return;
   }
   throw e;
@@ -35,6 +35,33 @@ async function initFolders() {
     .catch(ignoreErrorIfExist);
   await etcd.mkdir(`${rootPath}/privs`, { prevExist: false })
     .catch(ignoreErrorIfExist);
+}
+
+async function initOne(initFile, servicePath) {
+  const content = await fs.readFile(initFile);
+  const vars = _.template(content)(process.env);
+  const props = dotenv.parse(vars);
+
+  await etcd.mkdir(`${servicePath}/props`, { prevExist: false })
+    .catch(ignoreErrorIfExist);
+  await etcd.mkdir(`${servicePath}/privs`, { prevExist: false })
+    .catch(ignoreErrorIfExist);
+
+  await _.reduce(props, async (p2, value, name) => {
+    await p2;
+    if (name[0] === '_') {
+      // private settings
+      const privPath = `${servicePath}/privs/${name.substring(1)}`;
+      await etcd.set(privPath, value, { prevExist: false })
+        .then(() => logger.log(`Write init variable to "${privPath}", value is "${value}"`))
+        .catch(ignoreErrorIfExist);
+    } else {
+      const propPath = `${servicePath}/props/${name}`;
+      await etcd.set(propPath, value, { prevExist: false })
+        .then(() => logger.log(`Write init variable to "${propPath}", value is "${value}"`))
+        .catch(ignoreErrorIfExist);
+    }
+  }, Promise.resolve());
 }
 
 async function init() {
@@ -53,31 +80,11 @@ async function init() {
         }
         logger.log(`Found an init script file "${file}" in init folder.`);
         const service = match[2];
-        const content = await fs.readFile(path.resolve(initFolder, file));
-        const vars = _.template(content)(process.env);
-        const props = dotenv.parse(vars);
-        const servicePath = `${rootPath}/services/${service}`;
-
-        await etcd.mkdir(`${servicePath}/props`, { prevExist: false })
-          .catch(ignoreErrorIfExist);
-        await etcd.mkdir(`${servicePath}/privs`, { prevExist: false })
-          .catch(ignoreErrorIfExist);
-
-        await _.reduce(props, async (p2, value, name) => {
-          await p2;
-          if (name[0] === '_') {
-            // private settings
-            const privPath = `${servicePath}/privs/${name.substring(1)}`;
-            await etcd.set(privPath, value, { prevExist: false })
-              .then(() => logger.log(`Write init variable to "${privPath}", value is "${value}"`))
-              .catch(ignoreErrorIfExist);
-          } else {
-            const propPath = `${servicePath}/props/${name}`;
-            await etcd.set(propPath, value, { prevExist: false })
-              .then(() => logger.log(`Write init variable to "${propPath}", value is "${value}"`))
-              .catch(ignoreErrorIfExist);
-          }
-        }, Promise.resolve());
+        const initFile = path.resolve(initFolder, file);
+        const servicePath = service === 'base' ?
+          rootPath :
+          `${rootPath}/services/${service}`;
+        await initOne(initFile, servicePath);
       }, Promise.resolve());
     }
   } else {

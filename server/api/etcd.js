@@ -152,7 +152,7 @@ function watch() {
   await initFolders()
     .catch(e => logger.error(`InitFolder failed with error: ${e.stack}`));
   await init()
-    .catch(e => logger.error(`Init failded with error: ${e.stack}`));
+    .catch(e => logger.error(`Init failed with error: ${e.stack}`));
   watch();
 }());
 export default etcd;

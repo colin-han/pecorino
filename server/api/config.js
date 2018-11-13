@@ -44,7 +44,7 @@ async function getOriginProps(basePropPath, results) {
   }
 }
 
-async function getAllProps(res: $Response, service: string, includePriv: boolean) {
+async function getAllProps(service: string, includePriv: boolean) {
   const rootPath = `/${production}/${version}/${env}`;
   const results = {};
 
@@ -60,7 +60,20 @@ async function getAllProps(res: $Response, service: string, includePriv: boolean
     await getOriginProps(`${rootPath}/services/${service}/privs/`, results);
   }
 
-  res.json({ success: true, results });
+  return results;
+}
+
+async function getAllServices() {
+  const rootPath = `/${production}/${version}/${env}/services/register/ends`;
+  const nodes = await etcd.get(rootPath, null, { recursive: true });
+
+  if (nodes && nodes.body && nodes.body.node && nodes.body.node.nodes) {
+    return _.fromPairs(_.map(nodes.body.node.nodes, serviceNode => ([
+      serviceNode.key.replace(`${rootPath}/`, ''),
+      _.map(serviceNode.nodes, end => end.value)
+    ])));
+  }
+  return {};
 }
 
 // 获取服务的参数 （不包含保密属性）
@@ -73,13 +86,20 @@ async function getAllProps(res: $Response, service: string, includePriv: boolean
 //   result [object]: 服务相关参数
 define(
   'GET /prop/:service',
-  { auth: true, device: true },
   async (req, res) => {
     const {
       params: { service },
     } = (req: any);
 
-    await getAllProps(res, service, false);
+    if (service !== 'register') {
+      res.json({ success: true, results: await getAllProps(service, false) });
+    } else {
+      res.json({
+        success: true,
+        results: await getAllProps(service, false),
+        services: await getAllServices()
+      });
+    }
   }
 );
 
@@ -99,7 +119,7 @@ define(
       params: { service },
     } = (req: any);
 
-    await getAllProps(res, service, true);
+    res.json({ success: true, results: await getAllProps(service, true) });
   }
 );
 

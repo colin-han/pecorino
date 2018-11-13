@@ -11,7 +11,7 @@ const { production, version, env } = config;
 
 function registerService(name: string, end: string) {
   const key = end.replace(/[.:/]/g, '_');
-  const path = `/${production}/${version}/${env}/services/register/${name}/${key}`;
+  const path = `/${production}/${version}/${env}/services/register/ends/${name}/${key}`;
   etcd.set(path, end);
 }
 

@@ -35,9 +35,15 @@ async function initFolders() {
     .catch(ignoreErrorIfExist);
   await etcd.mkdir(`${rootPath}/privs`, { prevExist: false })
     .catch(ignoreErrorIfExist);
+
+  // Init default setting folder if not existed.
+  await etcd.mkdir('/props', { prevExist: false })
+    .catch(ignoreErrorIfExist);
+  await etcd.mkdir('/privs', { prevExist: false })
+    .catch(ignoreErrorIfExist);
 }
 
-async function initOne(initFile, servicePath) {
+async function initForOneService(initFile, servicePath) {
   const content = await fs.readFile(initFile);
   const vars = _.template(content)(process.env);
   const props = dotenv.parse(vars);
@@ -84,7 +90,7 @@ async function init() {
         const servicePath = service === 'base' ?
           rootPath :
           `${rootPath}/services/${service}`;
-        await initOne(initFile, servicePath);
+        await initForOneService(initFile, servicePath);
       }, Promise.resolve());
     }
   } else {

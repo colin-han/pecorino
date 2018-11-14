@@ -2,6 +2,12 @@
 
 ```text
 root
++- props                      # 全局设置属性
+|  +- {key}                   # 属性名和值
+|  \- ...
++- privs                      # 全局设置保密属性
+|  +- {key}                   # 属性名和值
+|  \- ...
 +- {production}               # 产品ID，例：sxdqt
 |  +- {version}               # 产品版本号，例：v1.0
 |  |  +- {env}                # 环境，例：production, preview, qa等等
@@ -36,3 +42,19 @@ root
 |  \- ...
 \- ...
 ```
+
+# 约定
+* 设置分为"属性"`props`和"保密属性"`privs`两类，"属性"为公开属性，前端可以获得其中
+的所有属性。而"保密属性"为保密属性，前端不能够访问。
+* 获取属性时，如果属性和保密属性都有值时，且都可以使用时，优先使用保密属性。
+* `/${production}/${version}/${env}`是产品管理的基本单元，每份部署都应该隶属于其
+中一个单元。该目录下的`props`和`privs`为公共属性，所有的微服务会继承该属性。
+* `/${production}/${version}/${env}/services`目录下为每个微服务特有的设置。微服
+务访问属性时，如果该属性在专有目录下不存在时，会继承`/${production}/${version}/${env}`
+目录下的相同属性。
+* 如果属性的值中包含`$PROPNAME`或`${PROPNAME}`类似的内容时，会从根目录下的`props`
+或`privs`目录下查找值，进行替换。如果没有，则被替换为空字符串。查找时，高权限的属性可以
+使用低权限的属性，反之不可。  
+即`/${production}/${version}/${env}/props/FOO=${BAR}`中的`${BAR}`只能被替换为
+`/props/BAR`而不能被替换为`/privs/BAR`。  
+而`/${production}/${version}/${env}/privs/FOO=${BAR}`可以使用两者。

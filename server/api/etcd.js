@@ -105,7 +105,7 @@ async function getDefaultSetting() {
 function getRootFolder(service) {
   switch (service) {
     case '_':
-      return '/';
+      return '';
     case 'base':
       return rootPath;
     default:

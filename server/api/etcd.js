@@ -5,7 +5,6 @@ import _ from 'lodash';
 import P2mLogger from 'p2m-common-logger';
 import fs from 'fs-extra';
 import path from 'path';
-import dotenv from 'dotenv';
 
 import { notifyServiceChange, notifyAllChange } from './socketio';
 
@@ -43,31 +42,64 @@ async function initFolders() {
     .catch(ignoreErrorIfExist);
 }
 
-async function initForOneService(initFile, servicePath) {
-  const content = await fs.readFile(initFile);
-  const vars = _.template(content)(process.env);
-  const props = dotenv.parse(vars);
-
+async function initForOneService(filename, servicePath, defaults) {
   await etcd.mkdir(`${servicePath}/props`, { prevExist: false })
     .catch(ignoreErrorIfExist);
   await etcd.mkdir(`${servicePath}/privs`, { prevExist: false })
     .catch(ignoreErrorIfExist);
 
-  await _.reduce(props, async (p2, value, name) => {
-    await p2;
-    if (name[0] === '_') {
-      // private settings
-      const privPath = `${servicePath}/privs/${name.substring(1)}`;
-      await etcd.set(privPath, value, { prevExist: false })
-        .then(() => logger.log(`Write init variable to "${privPath}", value is "${value}"`))
-        .catch(ignoreErrorIfExist);
-    } else {
-      const propPath = `${servicePath}/props/${name}`;
-      await etcd.set(propPath, value, { prevExist: false })
-        .then(() => logger.log(`Write init variable to "${propPath}", value is "${value}"`))
-        .catch(ignoreErrorIfExist);
+  const content = await fs.readFile(filename);
+  const lines = content.split(/\s*[\r\n]+\s*/);
+
+  await _.reduce(lines, async (pms, line, ln) => {
+    await pms;
+
+    if (!line || line[0] === '#') {
+      return;
     }
-  }, Promise.resolve());
+
+    const s = /^(_?)([A-Za-z_\-.]+)=(.*)$/.exec(line);
+    if (!s) {
+      const errorInfo = `Format error, file: "${filename}", Ln: ${ln}.`;
+      logger.error(errorInfo);
+      throw new Error(`Init env failed with error: ${errorInfo}`);
+    }
+
+    const [, priv, key, value] = s;
+    const formattedValue = _.template(value)(priv ? defaults.privs : defaults.props);
+
+    const keyPath = `${servicePath}/${priv ? 'privs' : 'props'}/${key}`
+    await etcd.set(keyPath, formattedValue, { prevExist: false })
+      .then(() => logger.log(`Write init variable to "${keyPath}", value is "${formattedValue}"`))
+      .catch(ignoreErrorIfExist);
+  });
+}
+
+async function getDefaultSetting() {
+  let props = {};
+  let privs = {};
+  const r1 = await etcd.get('/props');
+  if (!r1 || !r1.body || !r1.body.node || !r1.body.node.nodes) {
+    logger.warn('Cannot find "/props" folder.');
+  } else {
+    props = _.mapValues(
+      _.keyBy(r1.body.node.nodes, n => n.key.replace('/props', '')),
+      n => n.value
+    );
+  }
+  const r2 = await etcd.get('/privs');
+  if (!r2 || !r2.body || !r2.body.node || !r2.body.node.nodes) {
+    logger.warn('Cannot find "/privs" folder.');
+  } else {
+    privs = _.mapValues(
+      _.keyBy(r2.body.node.nodes, n => n.key.replace('/privs', '')),
+      n => n.value
+    );
+  }
+  return {
+    props,
+    privs: _.assign({}, props, privs)
+  };
 }
 
 async function init() {
@@ -77,6 +109,7 @@ async function init() {
   if (await stat.isDirectory()) {
     const files = await fs.readdir(initFolder);
     if (files) {
+      const defaults = await getDefaultSetting();
       await _.reduce(files, async (p, file) => {
         await p;
         const match = /^(.*\/)?([a-z\-_.]+).env$/.exec(file);
@@ -90,7 +123,7 @@ async function init() {
         const servicePath = service === 'base' ?
           rootPath :
           `${rootPath}/services/${service}`;
-        await initForOneService(initFile, servicePath);
+        await initForOneService(initFile, servicePath, defaults);
       }, Promise.resolve());
     }
   } else {

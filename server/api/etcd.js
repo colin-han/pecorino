@@ -48,7 +48,7 @@ async function initForOneService(filename, servicePath, defaults) {
   await etcd.mkdir(`${servicePath}/privs`, { prevExist: false })
     .catch(ignoreErrorIfExist);
 
-  const content = await fs.readFile(filename);
+  const content = await fs.readFile(filename, 'utf8');
   const lines = content.split(/\s*[\r\n]+\s*/);
 
   await _.reduce(lines, async (pms, line, ln) => {
@@ -66,13 +66,13 @@ async function initForOneService(filename, servicePath, defaults) {
     }
 
     const [, priv, key, value] = s;
-    const formattedValue = _.template(value)(priv ? defaults.privs : defaults.props);
+    const formattedValue = _.template(value)({ env: priv ? defaults.privs : defaults.props });
 
-    const keyPath = `${servicePath}/${priv ? 'privs' : 'props'}/${key}`
+    const keyPath = `${servicePath}/${priv ? 'privs' : 'props'}/${key}`;
     await etcd.set(keyPath, formattedValue, { prevExist: false })
       .then(() => logger.log(`Write init variable to "${keyPath}", value is "${formattedValue}"`))
       .catch(ignoreErrorIfExist);
-  });
+  }, Promise.resolve());
 }
 
 async function getDefaultSetting() {
@@ -83,7 +83,7 @@ async function getDefaultSetting() {
     logger.warn('Cannot find "/props" folder.');
   } else {
     props = _.mapValues(
-      _.keyBy(r1.body.node.nodes, n => n.key.replace('/props', '')),
+      _.keyBy(r1.body.node.nodes, n => n.key.replace('/props/', '')),
       n => n.value
     );
   }
@@ -92,7 +92,7 @@ async function getDefaultSetting() {
     logger.warn('Cannot find "/privs" folder.');
   } else {
     privs = _.mapValues(
-      _.keyBy(r2.body.node.nodes, n => n.key.replace('/privs', '')),
+      _.keyBy(r2.body.node.nodes, n => n.key.replace('/privs/', '')),
       n => n.value
     );
   }
@@ -100,6 +100,17 @@ async function getDefaultSetting() {
     props,
     privs: _.assign({}, props, privs)
   };
+}
+
+function getRootFolder(service) {
+  switch (service) {
+    case '_':
+      return '/';
+    case 'base':
+      return rootPath;
+    default:
+      return `${rootPath}/services/${service}`;
+  }
 }
 
 async function init() {
@@ -120,9 +131,7 @@ async function init() {
         logger.log(`Found an init script file "${file}" in init folder.`);
         const service = match[2];
         const initFile = path.resolve(initFolder, file);
-        const servicePath = service === 'base' ?
-          rootPath :
-          `${rootPath}/services/${service}`;
+        const servicePath = getRootFolder(service);
         await initForOneService(initFile, servicePath, defaults);
       }, Promise.resolve());
     }

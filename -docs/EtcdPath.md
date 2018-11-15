@@ -56,13 +56,17 @@ root
 # 初始化env文件
 * 服务目录下的`init`目录中的`*.env`文件为服务初始化配置，用来对当前`/${production}/${version}/${env}`
 进行初始化
-* 每个文件对应一个服务，文件名应和服务名一致。文件内容使用env格式
-* 属性名推荐使用大写与'_'组合
+* 每个文件对应一个服务，文件名应和服务名一致。`base.env`与`_.env`为保留文件。  
+其中`base.env`用来初始化通用设置（即：`/${production}/${version}/${env}/props`或
+`/${production}/${version}/${env}/privs`）；  
+`_.env`用来初始化全局设置（即根目录下的`\props`和`\privs`）
+* 文件内容使用env格式。
+* 属性名推荐使用大写与'_'组合，可以使用`A-Za-z_-.`字符
 * 属性名以'_'开始的，视为保密属性`privs`，否则属于公共属性`props`。
-* 如果属性的值中包含`<%= PROPNAME %>`的内容时，会从根目录下的`props`或`privs`目录下
+* 如果属性的值中包含`<%= env.PROPNAME %>`的内容时，会从全局设置（即根目录下的`/props`或`/privs`）目录下
 查找值，进行替换。如果没有，则被替换为空字符串。
 * 替换时，高权限的属性可以使用低权限的属性，反之不可。  
-即`/${production}/${version}/${env}/props/FOO=<%= BAR %>`中的`<%= BAR %>`只
+即`/${production}/${version}/${env}/props/FOO=<%= env.BAR %>`中的`<%= env.BAR %>`只
 能被替换为`/props/BAR`而不能被替换为`/privs/BAR`。  
-而`/${production}/${version}/${env}/privs/FOO=<%= BAR %>`可以使用两者，有限使
+而`/${production}/${version}/${env}/privs/FOO=<%= env.BAR %>`可以使用两者，有限使
 用`/privs/BAR`。

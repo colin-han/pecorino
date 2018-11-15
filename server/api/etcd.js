@@ -58,7 +58,7 @@ async function initForOneService(filename, servicePath, defaults) {
       return;
     }
 
-    const s = /^(_?)([A-Za-z_\-.]+)=(.*)$/.exec(line);
+    const s = /^(_?)([A-Za-z0-9_\-.]+)=(.*)$/.exec(line);
     if (!s) {
       const errorInfo = `Format error, file: "${filename}", Ln: ${ln}.`;
       logger.error(errorInfo);

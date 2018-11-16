@@ -3,3 +3,4 @@ version: VERSION
 env: CONFIG
 etcd:
   cluster: ETCD_CLUSTER
+port: PORT

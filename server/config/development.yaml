@@ -5,12 +5,5 @@ cors:
     - http://localhost:4000
   credentials: true
 
-apis:
-  castle: http://localhost:4001
-  merlin: http://localhost:4003
-  murano: http://localhost:4004
-  arsenal: http://localhost:4002
-  mercurius: http://localhost:4004/message
-
 etcd:
   cluster: localhost:2379

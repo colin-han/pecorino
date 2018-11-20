@@ -74,8 +74,11 @@ function start() {
     return res.json();
   }).then(conf => {
     info(`Got the configurations from comfit. then starting the service "${serviceId}"...`);
+    info('Config is: -------------------------------------');
+    info(JSON.stringify(conf.results, null, ' '));
+    info('------------------------------------------------');
     pid = childProcess.spawn('node', ['-r', 'babel-register', file, ...argv._], {
-      env: Object.assign({}, process.env, conf),
+      env: Object.assign({}, process.env, conf.results),
       stdio: 'inherit'
     });
     pid.on('exit', (code, signal) => {

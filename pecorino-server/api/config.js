@@ -30,8 +30,8 @@ async function getProps(res: $Response, type: 'prop' | 'priv', service: string, 
   res.json({ success: true, isNull: true });
 }
 
-async function getOriginProps(basePropPath, results) {
-  const baseProps = await etcd.get(basePropPath).catch(() => undefined);
+async function getOriginProps(propPath, results) {
+  const baseProps = await etcd.get(propPath).catch(() => undefined);
   if (
     baseProps &&
     baseProps.body &&
@@ -39,7 +39,23 @@ async function getOriginProps(basePropPath, results) {
     baseProps.body.node.nodes
   ) {
     _.forEach(baseProps.body.node.nodes, node => {
-      results[node.key.replace(basePropPath, '')] = node.value;
+      results[node.key.replace(propPath, '')] = node.value;
+    });
+  }
+}
+
+async function getEnds(endsPath, results) {
+  const baseProps = await etcd.get(endsPath, { recursive: true }).catch(() => undefined);
+  if (
+    baseProps &&
+    baseProps.body &&
+    baseProps.body.node &&
+    baseProps.body.node.nodes
+  ) {
+    _.forEach(baseProps.body.node.nodes, node => {
+      if (node.nodes) {
+        results[node.key.replace(endsPath, '@_')] = node.nodes.map(n => n.value).join(',');
+      }
     });
   }
 }
@@ -58,6 +74,7 @@ async function getAllProps(service: string, includePriv: boolean) {
 
   if (includePriv) {
     await getOriginProps(`${rootPath}/services/${service}/privs/`, results);
+    await getEnds(`${rootPath}/services/${service}/ends/`, results);
   }
 
   return results;
@@ -76,6 +93,7 @@ async function getAllServices() {
   return {};
 }
 
+// 获取前端配置参数
 define(
   'GET /configuration',
   async (req, res) => {
@@ -105,6 +123,28 @@ define(
   }
 );
 
+// 获取服务的配置 （包含保密属性）
+//   该接口**不可以**被前端调用
+// Input:
+//   params.service [string]: 服务id
+// Output:
+//   success [bool]: 操作成功标记
+//   error [string]: 错误信息
+//   result [object]: 服务相关参数
+define(
+  'GET /conf/:service',
+  { device: true },
+  async (req, res) => {
+    const {
+      params: { service },
+    } = (req: any);
+
+    res.json({ success: true, results: await getAllProps(service, true) });
+  }
+);
+
+// --------------------------------------------
+
 // 获取服务的参数 （不包含保密属性）
 //   该接口**可以**被前端调用
 // Input:
@@ -129,26 +169,6 @@ define(
         services: await getAllServices()
       });
     }
-  }
-);
-
-// 获取服务的配置 （包含保密属性）
-//   该接口**不可以**被前端调用
-// Input:
-//   params.service [string]: 服务id
-// Output:
-//   success [bool]: 操作成功标记
-//   error [string]: 错误信息
-//   result [object]: 服务相关参数
-define(
-  'GET /conf/:service',
-  { device: true },
-  async (req, res) => {
-    const {
-      params: { service },
-    } = (req: any);
-
-    res.json({ success: true, results: await getAllProps(service, true) });
   }
 );
 

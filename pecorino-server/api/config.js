@@ -76,6 +76,13 @@ async function getAllServices() {
   return {};
 }
 
+define(
+  'GET /configuration',
+  async (req, res) => {
+    res.json({ success: true, services: [] });
+  }
+);
+
 // 获取服务的参数 （不包含保密属性）
 //   该接口**可以**被前端调用
 // Input:

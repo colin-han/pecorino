@@ -79,7 +79,29 @@ async function getAllServices() {
 define(
   'GET /configuration',
   async (req, res) => {
-    res.json({ success: true, services: [] });
+    const rootPath = `/${production}/${version}/${env}`;
+    const base = {};
+
+    await getOriginProps(`${rootPath}/props/`, base);
+
+    const r = await etcd.get(`${rootPath}/services`);
+    if (r && r.body && r.body && r.body.node && r.body.node.nodes) {
+      res.json({
+        success: true,
+        services: _.fromPairs(await Promise.all(_.map(r.body.node.nodes, async node => {
+          const [, serviceName] = /.*\/([a-zA-Z0-9_\-.]+)/.exec(node.key);
+          const values = { ...base };
+          await getOriginProps(`${node.key}/props/`, values);
+          return [
+            serviceName,
+            values,
+          ];
+        })))
+      });
+      return;
+    }
+
+    res.json({ success: false, error: 'Cannot find any services' });
   }
 );
 

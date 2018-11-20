@@ -5,8 +5,9 @@ const readline = require('readline');
 const path = require('path');
 
 const projects = [
-  'client',
-  'server',
+  'pecorino-mon',
+  'pecorino-client',
+  'pecorino-server',
 ];
 
 let parallel, command, args;

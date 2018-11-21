@@ -1,11 +1,9 @@
 #!/usr/bin/env node
-
-const SocketIo = require('socket.io-client');
-const yargs = require('yargs');
-const { URL } = require('url');
 const chalk = require('chalk');
 const childProcess = require('child_process');
-const fetch = require('node-fetch');
+const _ = require('lodash');
+const { promises: fs } = require('fs');
+const path = require('path');
 
 function info(message) {
   console.log(chalk.cyan(message));
@@ -14,93 +12,101 @@ function error(message) {
   console.error(chalk.red(message));
 }
 
-const { argv } = yargs
-  .usage(`Usage: $0 -m <http://master-ip:port/path/to> \\
-         -s <service-name> \\
-         -f <server.js> \\
-         -a <my-ip-address-url> \\
-         -p <my-port> \\
-         [-r babel-regiter] \\
-         -l
-  `)
-  .alias('m', 'master')
-  .alias('s', 'serviceId')
-  .alias('a', 'myAddr')
-  .alias('p', 'myPort')
-  .alias('f', 'file')
-  .array('require')
-  .alias('r', 'require')
-  .alias('l', 'register')
-  .count('verbose')
-  .alias('v', 'verbose')
-  .demandOption(['m', 's', 'f']);
+async function start(nginxTemplateFile) {
+  const { env } = process;
+  const nginxCmd = env.NGINX || 'nginx';
+  const filePath = path.resolve('nginx.conf');
 
-const master = new URL(argv.master);
-const { serviceId, myAddr, myPort, file, register } = argv;
-
-let pid;
-
-const io = new SocketIo(master.origin, { path: `${master.pathname}io` });
-io.on('connect', () => {
-  if (register) {
-    io.emit('register', {
-      service: serviceId,
-      addr: myAddr,
-      port: myPort,
-    });
-  }
-  io.emit('watch', { service: serviceId });
-});
-io.on('change', () => restart());
-
-function restart() {
-  if (pid) {
-    info(`Found a config changed, to restarting the service "${serviceId}"...`);
-    pid.kill('SIGUSR2');
-  } else {
-    start();
-  }
-}
-
-function start() {
-  info(`Prepare to starting the service "${serviceId}"...`);
-
-  fetch(`${argv.master}/conf/${serviceId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }).then(res => {
-    if (!res.ok) {
-      throw new Error(`Assess failed with ${res.status}: ${res.statusText}`);
-    }
-    return res.json();
-  }).then(conf => {
-    info(`Got the configurations from comfit. then starting the service "${serviceId}"...`);
-    info('Config is: -------------------------------------');
-    info(JSON.stringify(conf.results, null, ' '));
-    info('------------------------------------------------');
-    const r = [];
-    if (argv.require) {
-      argv.require.forEach(req => {
-        r.push('-r');
-        r.push(req);
+  if (await fs.stat(filePath).then(() => true).catch(() => false)) {
+    await fs.unlink(filePath)
+      .catch((err) => {
+        error(`Failed to delete old config file '${filePath}'. Error: ${err.stack}`);
+        process.exit(2);
       });
+  }
+
+  const ends = _.map(
+    _.filter(
+      _.toPairs(env),
+      ([name]) => name.indexOf('@_') === 0
+    ),
+    ([name, value]) => ([
+      name.substring(2),
+      value.split(',').map(end => {
+        const parts = end.split(':');
+        return {
+          ip: parts[0],
+          port: parts[1],
+          role: parts[2] || 'api'
+        };
+      })
+    ])
+  );
+
+  info('End-points is found as following: -----------------');
+  info(JSON.stringify(ends, null, '  '));
+  info('---------------------------------------------------');
+  const upstreams = _.map(ends, end => (
+    `
+upstream ${end[0]} {
+${_.map(end[1], p => `  server ${p.ip}:${p.port};`).join('\n')}
+}`
+  )).join('\n');
+
+  const rewrites = _.map(ends, end => (
+    `
+location ${end[0] === 'web' ? '/' : `/api/${end[0]}/`} {
+  ${end[0] !== 'web' ? `rewrite /api/${end[0]}/(.*) /$1 break;` : ''}
+  proxy_pass http://${end[0]};
+}`
+  )).join('\n');
+
+  const template = await fs.readFile(path.resolve(nginxTemplateFile), { encoding: 'utf8' });
+  const nginxFile = _.template(template)({
+    env: process.env,
+    pecorino: {
+      UPSTREAMS: upstreams,
+      URL_REWRITES: rewrites,
+    },
+  });
+  await fs.writeFile(filePath, nginxFile, { encoding: 'utf8' });
+
+  info('Starting to validate nginx.conf');
+  childProcess.exec(`"${nginxCmd}" -t -c ${filePath}`, (err, stdout, stderr) => {
+    if (err) {
+      error('Validate nginx.conf failed with errors: --------------');
+      console.error(err);
+      console.error('STDOUT: ----------------------------------------------');
+      console.error(stdout);
+      console.error('STDERR: ----------------------------------------------');
+      console.error(stderr);
+      process.exit(3);
+      return;
     }
-    pid = childProcess.spawn('node', [...r, file, ...argv._], {
-      env: Object.assign({}, process.env, conf.results),
-      stdio: 'inherit'
-    });
-    pid.on('exit', (code, signal) => {
-      info(`Service exit with code ${code}, that is caused by signal "${signal}"`);
-      if (signal === 'SIGUSR2') {
-        start();
+
+    info('Validate success, reload nginx ...');
+    childProcess.exec(`"${nginxCmd}" -s reload -c "${filePath}"`, (err2, stdout2, stderr2) => {
+      if (err2) {
+        error(`Reload nginx config with error: ${err2}`);
+        console.error('STDOUT: ----------------------------------------------');
+        console.error(stdout2);
+        console.error('STDERR: ----------------------------------------------');
+        console.error(stderr2);
+        process.exit(4);
+        return;
       }
+
+      console.log('STDOUT: ----------------------------------------------');
+      console.log(stdout2);
+      console.log('STDERR: ----------------------------------------------');
+      console.log(stderr2);
+      info('Reload success.');
     });
-    info(`Service "${serviceId}" stared, the PID is ${pid.pid}.`);
-  }).catch(err => {
-    error(`Service "${serviceId}" starting failed with error: ${err.stack}`);
   });
 }
 
-start();
+if (process.argv.length < 2) {
+  console.log(`Usage: ${__filename} <nginx_template.conf>`);
+  process.exit(1);
+}
+start(process.argv[2]);

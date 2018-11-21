@@ -20,7 +20,7 @@ const { argv } = yargs
          -f <server.js> \\
          -a <my-ip-address-url> \\
          -p <my-port> \\
-         [-r babel-regiter] \\
+         [-r babel-register] \\
          -l
   `)
   .alias('m', 'master')

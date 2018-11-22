@@ -12,6 +12,45 @@ function error(message) {
   console.error(chalk.red(message));
 }
 
+function startNginx(nginxCmd, filePath) {
+  childProcess.exec(`"${nginxCmd}" -s reload -c "${filePath}"`, (err2, stdout2, stderr2) => {
+    if (err2) {
+      error(`Reload nginx config with error: ${err2}`);
+      console.error('STDOUT: ----------------------------------------------');
+      console.error(stdout2);
+      console.error('STDERR: ----------------------------------------------');
+      console.error(stderr2);
+      process.exit(4);
+      return;
+    }
+
+    console.log('STDOUT: ----------------------------------------------');
+    console.log(stdout2);
+    console.log('STDERR: ----------------------------------------------');
+    console.log(stderr2);
+    info('Reload success.');
+  });
+}
+
+function validAndStartNginx(nginxCmd, filePath) {
+  info('Starting to validate nginx.conf');
+  childProcess.exec(`"${nginxCmd}" -t -c ${filePath}`, (err, stdout, stderr) => {
+    if (err) {
+      error('Validate nginx.conf failed with errors: --------------');
+      console.error(err);
+      console.error('STDOUT: ----------------------------------------------');
+      console.error(stdout);
+      console.error('STDERR: ----------------------------------------------');
+      console.error(stderr);
+      process.exit(3);
+      return;
+    }
+
+    info('Validate success, reload nginx ...');
+    startNginx(nginxCmd, filePath);
+  });
+}
+
 async function start(nginxTemplateFile) {
   const { env } = process;
   const nginxCmd = env.NGINX || 'nginx';
@@ -71,38 +110,8 @@ location ${end[0] === 'web' ? '/' : `/api/${end[0]}/`} {
   });
   await fs.writeFile(filePath, nginxFile, { encoding: 'utf8' });
 
-  info('Starting to validate nginx.conf');
-  childProcess.exec(`"${nginxCmd}" -t -c ${filePath}`, (err, stdout, stderr) => {
-    if (err) {
-      error('Validate nginx.conf failed with errors: --------------');
-      console.error(err);
-      console.error('STDOUT: ----------------------------------------------');
-      console.error(stdout);
-      console.error('STDERR: ----------------------------------------------');
-      console.error(stderr);
-      process.exit(3);
-      return;
-    }
-
-    info('Validate success, reload nginx ...');
-    childProcess.exec(`"${nginxCmd}" -s reload -c "${filePath}"`, (err2, stdout2, stderr2) => {
-      if (err2) {
-        error(`Reload nginx config with error: ${err2}`);
-        console.error('STDOUT: ----------------------------------------------');
-        console.error(stdout2);
-        console.error('STDERR: ----------------------------------------------');
-        console.error(stderr2);
-        process.exit(4);
-        return;
-      }
-
-      console.log('STDOUT: ----------------------------------------------');
-      console.log(stdout2);
-      console.log('STDERR: ----------------------------------------------');
-      console.log(stderr2);
-      info('Reload success.');
-    });
-  });
+  info('Starting nginx ...');
+  startNginx(nginxCmd, filePath);
 }
 
 if (process.argv.length < 2) {

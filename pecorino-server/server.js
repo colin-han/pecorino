@@ -50,9 +50,21 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '150kb' }));
 
+app.set('view engine', 'ejs');
+app.use('/public', express.static(path.resolve(__dirname, 'public')));
+
 api(app);
 webApiSetup(app);
 socketIoSetup(server);
+
+app.get('/', (req, res) => {
+  res.render('pages/home', {
+    production: config.production,
+    version: config.version,
+    env: config.env,
+  });
+});
+
 
 //
 // Error handling

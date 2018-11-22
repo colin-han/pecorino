@@ -13,7 +13,7 @@ function error(message) {
 }
 
 function startNginx(nginxCmd, filePath) {
-  childProcess.exec(`"${nginxCmd}" -s reload -c "${filePath}"`, (err2, stdout2, stderr2) => {
+  childProcess.exec(`"${nginxCmd}" -c "${filePath}"`, (err2, stdout2, stderr2) => {
     if (err2) {
       error(`Reload nginx config with error: ${err2}`);
       console.error('STDOUT: ----------------------------------------------');
@@ -111,7 +111,7 @@ location ${end[0] === 'web' ? '/' : `/api/${end[0]}/`} {
   await fs.writeFile(filePath, nginxFile, { encoding: 'utf8' });
 
   info('Starting nginx ...');
-  startNginx(nginxCmd, filePath);
+  validAndStartNginx(nginxCmd, filePath);
 }
 
 if (process.argv.length < 2) {

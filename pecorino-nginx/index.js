@@ -35,7 +35,7 @@ async function start(nginxTemplateFile) {
       value.split(',').map(end => {
         const parts = end.split(':');
         return {
-          ip: parts[0],
+          ip: parts[0] === '$DOCKER_HOST' ? env.DOCKER_HOST : parts[0],
           port: parts[1],
           role: parts[2] || 'api'
         };

@@ -6,10 +6,12 @@ const { URL } = require('url');
 const chalk = require('chalk');
 const childProcess = require('child_process');
 const fetch = require('node-fetch');
+const { initEnv } = require('pecorino-client');
 
 function info(message) {
   console.log(chalk.cyan(message));
 }
+
 function error(message) {
   console.error(chalk.red(message));
 }
@@ -62,45 +64,37 @@ function restart() {
   }
 }
 
+function startService() {
+  const r = [];
+  if (argv.require) {
+    argv.require.forEach(req => {
+      r.push('-r');
+      r.push(req);
+    });
+  }
+  pid = childProcess.spawn('node', [...r, file, ...argv._], {
+    env: process.env,
+    stdio: 'inherit'
+  });
+  pid.on('exit', (code, signal) => {
+    info(`Service exit with code ${code}, that is caused by signal "${signal}"`);
+    if (signal === 'SIGUSR2') {
+      start();
+    }
+  });
+  info(`Service "${serviceId}" stared, the PID is ${pid.pid}.`);
+}
+
 function start() {
   info(`Prepare to starting the service "${serviceId}"...`);
 
-  fetch(`${argv.master}/conf/${serviceId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }).then(res => {
-    if (!res.ok) {
-      throw new Error(`Assess failed with ${res.status}: ${res.statusText}`);
-    }
-    return res.json();
-  }).then(conf => {
-    info(`Got the configurations from comfit. then starting the service "${serviceId}"...`);
-    info('Config is: -------------------------------------');
-    info(JSON.stringify(conf.results, null, ' '));
-    info('------------------------------------------------');
-    const r = [];
-    if (argv.require) {
-      argv.require.forEach(req => {
-        r.push('-r');
-        r.push(req);
-      });
-    }
-    pid = childProcess.spawn('node', [...r, file, ...argv._], {
-      env: Object.assign({}, process.env, conf.results),
-      stdio: 'inherit'
+  initEnv(argv.master, serviceId)
+    .then(() => {
+      startService();
+    })
+    .catch(err => {
+      error(`Service "${serviceId}" starting failed with error: ${err.stack}`);
     });
-    pid.on('exit', (code, signal) => {
-      info(`Service exit with code ${code}, that is caused by signal "${signal}"`);
-      if (signal === 'SIGUSR2') {
-        start();
-      }
-    });
-    info(`Service "${serviceId}" stared, the PID is ${pid.pid}.`);
-  }).catch(err => {
-    error(`Service "${serviceId}" starting failed with error: ${err.stack}`);
-  });
 }
 
 start();

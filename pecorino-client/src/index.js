@@ -25,23 +25,31 @@ if (typeof fetch !== 'function') {
 let settings = null;
 const waiters = [];
 
+function info(message) {
+  console.log(`[pecorino] ${message.replace(/[\r\n]+/g, '\n[pecorino] ')}`);
+}
+
+function error(message) {
+  console.error(`[pecorino] ${message.replace(/[\r\n]+/g, '\n[pecorino] ')}`);
+}
+
 export async function start(pecorinoAddr) {
-  console.log(`[pecorino] Start to get configuration from ${pecorinoAddr} ...`);
+  info(`Start to get configuration from ${pecorinoAddr} ...`);
   return fetch(`${pecorinoAddr}/configuration`, {
     method: 'GET',
   }).then(res => {
     if (!res.ok) {
-      console.error(`[pecorino] Get configuration from ${pecorinoAddr} failed with failed response ${res.status}: ${res.statusText}`);
+      error(`Get configuration from ${pecorinoAddr} failed with failed response ${res.status}: ${res.statusText}`);
     } else {
       return res.json();
     }
   }).then(result => {
     if (result) {
       if (!result.success) {
-        console.error(`[pecorino] Get configuration from ${pecorinoAddr} with an error message: ${result.error}.`);
+        error(`Get configuration from ${pecorinoAddr} with an error message: ${result.error}.`);
       } else {
-        console.log('[pecorino] Got the configuration -----------------');
-        console.log(`[pecorino] ${JSON.stringify(result.services, null, '  ').replace(/[\r\n]+/g, '\n[pecorino] ')}`);
+        info('Got the configuration -----------------');
+        info(JSON.stringify(result.services, null, '  '));
         settings = result.services;
         if (waiters.length) {
           const currentWaiters = [...waiters];
@@ -52,7 +60,7 @@ export async function start(pecorinoAddr) {
       }
     }
   }).catch(err => {
-    console.error(`[pecorino] Get configuration from ${pecorinoAddr} failed with error: ${err.stack}`);
+    error(`Get configuration from ${pecorinoAddr} failed with error: ${err.stack}`);
     throw err;
   });
 }
@@ -66,4 +74,24 @@ export async function get(service, propName) {
       waiters.push(() => resolve(settings[service][propName]));
     }
   });
+}
+
+export async function initEnv(pecorinoAddr, service) {
+  const res = await fetch(`${pecorinoAddr}/conf/${service}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Assess failed with ${res.status}: ${res.statusText}`);
+  }
+  const conf = await res.json();
+  info(`Got the configurations from comfit. then starting the service "${service}"...`);
+  info('Config is: -------------------------------------');
+  info(JSON.stringify(conf.results, null, ' '));
+  info('------------------------------------------------');
+
+  process.env = { ...conf.results, ...process.env };
 }

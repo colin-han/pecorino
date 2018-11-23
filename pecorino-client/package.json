@@ -12,7 +12,7 @@
     "start": "echo OK!",
     "start:dev": "echo OK!",
     "build": "babel ./src --out-dir dist",
-    "prepublish": "build",
+    "prepublish": "yarn build",
     "pub": "yarn publish --registry=http://registry.npmjs.com",
     "docker:build": "echo OK!",
     "docker:publish": "echo OK!",

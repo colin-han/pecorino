@@ -2027,10 +2027,10 @@ path-type@^2.0.0:
   dependencies:
     pify "^2.0.0"
 
-pecorino-client@^1.1.8:
-  version "1.1.8"
-  resolved "http://registry.npm.taobao.org/pecorino-client/download/pecorino-client-1.1.8.tgz#ed89318715255270a6c9024e839f1cc64b5e6a00"
-  integrity sha1-7YkxhxUlUnCmyQJOg58cxkteagA=
+pecorino-client@^1.1.16:
+  version "1.1.16"
+  resolved "http://registry.npm.taobao.org/pecorino-client/download/pecorino-client-1.1.16.tgz#9d461dcbea556df30447806f30ea32d491158fc7"
+  integrity sha1-nUYdy+pVbfMER4BvMOoy1JEVj8c=
   dependencies:
     "@babel/polyfill" "^7.0.0"
 

@@ -1,6 +1,6 @@
 {
   "name": "pecorino-client",
-  "version": "1.1.15",
+  "version": "1.1.16",
   "description": "Client to get config from pecorino.",
   "main": "dist/index.js",
   "author": "Colin Han <biz@colinhan.info>",
@@ -12,6 +12,7 @@
     "start": "echo OK!",
     "start:dev": "echo OK!",
     "build": "babel ./src --out-dir dist",
+    "prepublish": "build",
     "pub": "yarn publish --registry=http://registry.npmjs.com",
     "docker:build": "echo OK!",
     "docker:publish": "echo OK!",

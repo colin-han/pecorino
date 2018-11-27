@@ -1,6 +1,6 @@
 {
   "name": "pecorino-client",
-  "version": "1.1.16",
+  "version": "1.1.20",
   "description": "Client to get config from pecorino.",
   "main": "dist/index.js",
   "author": "Colin Han <biz@colinhan.info>",

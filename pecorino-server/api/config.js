@@ -93,33 +93,54 @@ async function getAllServices() {
   return {};
 }
 
+export async function registerService(service: string, endDesc: string) {
+  const key = endDesc.replace(/[.:/]/g, '_');
+  const path = `/${production}/${version}/${env}/services/register/ends/${service}/${key}`;
+  return etcd.set(path, endDesc);
+}
+
+export async function getConfiguration() {
+  const rootPath = `/${production}/${version}/${env}`;
+  const base = {};
+
+  await getOriginProps(`${rootPath}/props/`, base);
+
+  const r = await etcd.get(`${rootPath}/services`);
+  if (r && r.body && r.body && r.body.node && r.body.node.nodes) {
+    return _.fromPairs(await Promise.all(_.map(r.body.node.nodes, async node => {
+      const [, serviceName] = /.*\/([a-zA-Z0-9_\-.]+)/.exec(node.key);
+      const values = { ...base };
+      await getOriginProps(`${node.key}/props/`, values);
+      return [
+        serviceName,
+        values,
+      ];
+    })));
+  }
+
+  throw new Error('Cannot find any services');
+}
+
+// 注册服务
+define(
+  'POST /register',
+  async (req, res) => {
+    registerService(req.body.service, req.body.end)
+      .then(() => res.json({ success: true }))
+      .catch((err) => res.json({
+        success: false,
+        error: `Register service failed with error: ${err.message}`
+      }));
+  }
+);
+
 // 获取前端配置参数
 define(
   'GET /configuration',
   async (req, res) => {
-    const rootPath = `/${production}/${version}/${env}`;
-    const base = {};
-
-    await getOriginProps(`${rootPath}/props/`, base);
-
-    const r = await etcd.get(`${rootPath}/services`);
-    if (r && r.body && r.body && r.body.node && r.body.node.nodes) {
-      res.json({
-        success: true,
-        services: _.fromPairs(await Promise.all(_.map(r.body.node.nodes, async node => {
-          const [, serviceName] = /.*\/([a-zA-Z0-9_\-.]+)/.exec(node.key);
-          const values = { ...base };
-          await getOriginProps(`${node.key}/props/`, values);
-          return [
-            serviceName,
-            values,
-          ];
-        })))
-      });
-      return;
-    }
-
-    res.json({ success: false, error: 'Cannot find any services' });
+    getConfiguration()
+      .then(services => res.json({ success: true, services }))
+      .catch(err => res.json({ success: false, error: err.message }));
   }
 );
 

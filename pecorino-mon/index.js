@@ -5,7 +5,6 @@ const yargs = require('yargs');
 const { URL } = require('url');
 const chalk = require('chalk');
 const childProcess = require('child_process');
-const fetch = require('node-fetch');
 const { initEnv } = require('pecorino-client');
 
 function info(message) {
@@ -20,15 +19,13 @@ const { argv } = yargs
   .usage(`Usage: $0 -m <http://master-ip:port/path/to> \\
          -s <service-name> \\
          -f <server.js> \\
-         -a <my-ip-address-url> \\
-         -p <my-port> \\
+         -e <my-addr:my-port> \\
          [-r babel-register] \\
          -l
   `)
   .alias('m', 'master')
   .alias('s', 'serviceId')
-  .alias('a', 'myAddr')
-  .alias('p', 'myPort')
+  .alias('e', 'my')
   .alias('f', 'file')
   .array('require')
   .alias('r', 'require')
@@ -38,7 +35,7 @@ const { argv } = yargs
   .demandOption(['m', 's', 'f']);
 
 const master = new URL(argv.master);
-const { serviceId, myAddr, myPort, file, register } = argv;
+const { serviceId, my, file, register } = argv;
 
 let pid;
 
@@ -47,8 +44,7 @@ io.on('connect', () => {
   if (register) {
     io.emit('register', {
       service: serviceId,
-      addr: myAddr,
-      port: myPort,
+      end: my,
     });
   }
   io.emit('watch', { service: serviceId });

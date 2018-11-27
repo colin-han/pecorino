@@ -95,3 +95,26 @@ export async function initEnv(pecorinoAddr, service) {
 
   process.env = { ...conf.results, ...process.env };
 }
+
+export async function register(pecorinoAddr, service, end) {
+  const res = await fetch(`${pecorinoAddr}/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: {
+      service,
+      end,
+    }
+  });
+
+  if (!res.ok) {
+    throw new Error(`Register failed with ${res.status}: ${res.statusText}`);
+  }
+  const r = await res.json();
+  if (r.success) {
+    info('Register success.');
+  } else {
+    error(`Register service failed with error: ${r.error}`);
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "pecorino-mon",
-  "version": "1.1.22",
+  "version": "1.1.23",
   "description": "Client to watch config changed in pecorino, and restart the service.",
   "main": "index.js",
   "author": "Colin Han <biz@colinhan.info>",

@@ -64,10 +64,12 @@ async function start(nginxTemplateFile) {
       });
   }
 
+  info('ENV:');
+  info(JSON.stringify(env));
   const ends = _.map(
     _.filter(
       _.toPairs(env),
-      ([name]) => name.indexOf('@_') === 0
+      ([name]) => name.indexOf('PECORINO_ENDS_') === 0
     ),
     ([name, value]) => ([
       name.substring(2),

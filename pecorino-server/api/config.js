@@ -54,7 +54,7 @@ async function getEnds(endsPath, results) {
   ) {
     _.forEach(baseProps.body.node.nodes, node => {
       if (node.nodes) {
-        results[node.key.replace(endsPath, '@_')] = node.nodes.map(n => n.value).join(',');
+        results[node.key.replace(endsPath, 'PECORINO_ENDS_')] = node.nodes.map(n => n.value).join(',');
       }
     });
   }

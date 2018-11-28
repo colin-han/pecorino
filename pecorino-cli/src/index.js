@@ -27,7 +27,8 @@ const { serviceId } = argv;
 let pid;
 
 function startService() {
-  pid = childProcess.spawn(argv._, {
+  const [command, ...args] = argv._;
+  pid = childProcess.spawn(command, args, {
     env: process.env,
     stdio: 'inherit'
   });

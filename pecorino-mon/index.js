@@ -42,9 +42,12 @@ let pid;
 const io = new SocketIo(master.origin, { path: `${master.pathname}io` });
 io.on('connect', () => {
   if (register) {
+    info(`Registering current service (${my}) as ${serviceId}`);
     io.emit('register', {
       service: serviceId,
       end: my,
+    }, () => {
+      info('Register success.');
     });
   }
   io.emit('watch', { service: serviceId });

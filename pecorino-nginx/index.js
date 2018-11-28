@@ -72,7 +72,7 @@ async function start(nginxTemplateFile) {
       ([name]) => name.indexOf('PECORINO_ENDS_') === 0
     ),
     ([name, value]) => ([
-      name.substring(2),
+      name.substring(14),
       value.split(',').map(end => {
         const parts = end.split(':');
         return {

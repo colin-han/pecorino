@@ -1,8 +1,8 @@
 {
-  "name": "pecorino-mon",
+  "name": "pecorino-cli",
   "version": "1.1.20",
-  "description": "Client to watch config changed in pecorino, and restart the service.",
-  "main": "index.js",
+  "description": "CLI from pecorino.",
+  "main": "dist/index.js",
   "author": "Colin Han <biz@colinhan.info>",
   "license": "MIT",
   "repository": "https://github.com/colin-han/pecorino.git",
@@ -11,7 +11,8 @@
     "init-system": "echo OK!",
     "start": "echo OK!",
     "start:dev": "echo OK!",
-    "build": "echo OK!",
+    "build": "babel ./src --out-dir dist",
+    "prepublish": "yarn build",
     "pub": "yarn publish --registry=http://registry.npmjs.com",
     "docker:build": "echo OK!",
     "docker:publish": "echo OK!",
@@ -20,7 +21,7 @@
     "lint": "eslint .",
     "flow": "echo OK!"
   },
-  "bin": "index.js",
+  "bin": "dist/index.js",
   "lint-staged": {
     "*.js": [
       "yarn eslint --fix",
@@ -35,14 +36,18 @@
     ]
   },
   "dependencies": {
+    "@babel/polyfill": "^7.0.0",
     "chalk": "^2.4.1",
-    "config": "^2.0.1",
-    "node-fetch": "^2.2.1",
+    "node-fetch": "^2.3.0",
     "pecorino-client": "^1.1.20",
-    "socket.io-client": "^2.1.1",
-    "yargs": "^12.0.2"
+    "yargs": "^12.0.5"
   },
   "devDependencies": {
+    "@babel/cli": "^7.1.5",
+    "@babel/core": "^7.1.6",
+    "@babel/preset-env": "^7.1.6",
+    "@babel/register": "^7.0.0",
+    "babel-preset-minify": "^0.5.0",
     "eslint": "^5.8.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.14.0",

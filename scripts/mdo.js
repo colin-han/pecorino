@@ -5,8 +5,9 @@ const readline = require('readline');
 const path = require('path');
 
 const projects = [
-  'pecorino-mon',
+  'pecorino-cli',
   'pecorino-client',
+  'pecorino-mon',
   'pecorino-server',
 ];
 

@@ -1076,16 +1076,7 @@ chalk@^1.0.0, chalk@^1.1.3:
     strip-ansi "^3.0.0"
     supports-color "^2.0.0"
 
-chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.1:
-  version "2.4.1"
-  resolved "http://registry.npm.taobao.org/chalk/download/chalk-2.4.1.tgz#18c49ab16a037b6eb0152cc83e3471338215b66e"
-  integrity sha1-GMSasWoDe26wFSzIPjRxM4IVtm4=
-  dependencies:
-    ansi-styles "^3.2.1"
-    escape-string-regexp "^1.0.5"
-    supports-color "^5.3.0"
-
-chalk@^2.4.1:
+chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.1, chalk@^2.4.1:
   version "2.4.1"
   resolved "https://registry.npmjs.org/chalk/-/chalk-2.4.1.tgz#18c49ab16a037b6eb0152cc83e3471338215b66e"
   integrity sha512-ObN6h1v2fTJSmUXoS3nMQ92LbDK9be4TV+6G+omQlGJFdcUX5heKi1LZ1YnRMIgwTLEj3E24bT6tYni50rlCfQ==
@@ -3083,10 +3074,10 @@ path-type@^2.0.0:
   dependencies:
     pify "^2.0.0"
 
-pecorino-client@^1.1.20:
-  version "1.1.20"
-  resolved "https://registry.npmjs.org/pecorino-client/-/pecorino-client-1.1.20.tgz#10fcb6c2a98fd2cceff8eeb93795d39e6284fef4"
-  integrity sha512-j+1DlektLQvWu/N7uZR+/CP+RH1bOqSGWscp+qFaVMCufZOIUkjFMktzbxQKXoZpdwkX6PeHcscSmkaDQSeaPQ==
+pecorino-client@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/pecorino-client/-/pecorino-client-1.2.0.tgz#3ffeb3bc11bc22921d4372aadf600c9cdf87c92f"
+  integrity sha512-Ia3rJmCqDmq3zwfF04BhXn8BtCt5S/tQ6uoLEL4N7Od+d79O3WzgN8qOFO2hv6qnplyBM37Io7UGxpM885ziBw==
   dependencies:
     "@babel/polyfill" "^7.0.0"
 

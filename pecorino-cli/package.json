@@ -1,6 +1,6 @@
 {
   "name": "pecorino-cli",
-  "version": "1.1.22",
+  "version": "1.2.0",
   "description": "CLI from pecorino.",
   "main": "dist/index.js",
   "author": "Colin Han <biz@colinhan.info>",
@@ -39,7 +39,7 @@
     "@babel/polyfill": "^7.0.0",
     "chalk": "^2.4.1",
     "node-fetch": "^2.3.0",
-    "pecorino-client": "^1.1.20",
+    "pecorino-client": "^1.2.0",
     "yargs": "^12.0.5"
   },
   "devDependencies": {

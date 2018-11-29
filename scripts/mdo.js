@@ -8,6 +8,7 @@ const projects = [
   'pecorino-cli',
   'pecorino-client',
   'pecorino-mon',
+  'pecorino-nginx',
   'pecorino-server',
 ];
 

@@ -1,6 +1,6 @@
 {
   "name": "pecorino-cli",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "CLI from pecorino.",
   "main": "dist/index.js",
   "author": "Colin Han <biz@colinhan.info>",

@@ -16,7 +16,8 @@
     "pub": "node ./scripts/mdo.js -p yarn pub",
     "docker:build": "node ./scripts/mdo.js yarn docker:build",
     "docker:publish": "node ./scripts/mdo.js yarn docker:publish",
-    "precommit": "node ./scripts/mdo.js yarn lint-staged"
+    "precommit": "node ./scripts/mdo.js yarn lint-staged",
+    "new-version": "node ./scripts/mdo.js yarn version --no-git-tag-version --new-version "
   },
   "dependencies": {
     "chalk": "^2.4.1",

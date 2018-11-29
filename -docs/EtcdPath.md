@@ -12,7 +12,7 @@ root
 |  +- {version}               # 产品版本号，例：v1.0
 |  |  +- {env}                # 环境，例：production, preview, qa等等
 |  |  |  +- services          # 每个服务有自己的配置
-|  |  |  |  +- register       # 服务提供者列表
+|  |  |  |  +- gateway        # 服务提供者列表
 |  |  |  |  |  +- ends        # 单个服务的提供者和地址
 |  |  |  |  |  |  +- {service}# 单个服务的提供者和地址
 |  |  |  |  |  |  |  +- {id}  # 服务提供者地址和端口，例：hw02.p2m.org.cn:4001

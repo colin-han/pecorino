@@ -9,9 +9,10 @@ import etcd from './etcd';
 
 const { production, version, env } = config;
 
+const rootPath = `/${production}/${version}/${env}`;
+
 async function getProps(res: $Response, type: 'prop' | 'priv', service: string, prop: string) {
   const propName = prop.toUpperCase();
-  const rootPath = `/${production}/${version}/${env}`;
 
   const propPath = `${rootPath}/${service}/${type}s/${propName}`;
   const r = await etcd.get(propPath);
@@ -61,7 +62,6 @@ async function getEnds(endsPath, results) {
 }
 
 async function getAllProps(service: string, includePriv: boolean) {
-  const rootPath = `/${production}/${version}/${env}`;
   const results = {};
 
   await getOriginProps(`${rootPath}/props/`, results);
@@ -81,12 +81,12 @@ async function getAllProps(service: string, includePriv: boolean) {
 }
 
 async function getAllServices() {
-  const rootPath = `/${production}/${version}/${env}/services/register/ends`;
-  const nodes = await etcd.get(rootPath, null, { recursive: true });
+  const endsPath = `${rootPath}/services/gateway/ends`;
+  const nodes = await etcd.get(endsPath, null, { recursive: true });
 
   if (nodes && nodes.body && nodes.body.node && nodes.body.node.nodes) {
     return _.fromPairs(_.map(nodes.body.node.nodes, serviceNode => ([
-      serviceNode.key.replace(`${rootPath}/`, ''),
+      serviceNode.key.replace(`${endsPath}/`, ''),
       _.map(serviceNode.nodes, end => end.value)
     ])));
   }
@@ -94,13 +94,16 @@ async function getAllServices() {
 }
 
 export async function registerService(service: string, endDesc: string) {
+  if (service === 'gateway') {
+    return etcd.set(`${rootPath}/privs/gateway`, endDesc);
+  }
+
   const key = endDesc.replace(/[.:/]/g, '_');
-  const path = `/${production}/${version}/${env}/services/register/ends/${service}/${key}`;
+  const path = `${rootPath}/services/gateway/ends/${service}/${key}`;
   return etcd.set(path, endDesc);
 }
 
 export async function getConfiguration() {
-  const rootPath = `/${production}/${version}/${env}`;
   const base = {};
 
   await getOriginProps(`${rootPath}/props/`, base);

@@ -12,7 +12,7 @@ function error(message) {
   console.error(chalk.red(message));
 }
 
-function startNginx(nginxCmd, filePath) {
+function startNginx(nginxCmd, filePath, resolve, reject) {
   childProcess.exec(`"${nginxCmd}" -c "${filePath}"`, (err2, stdout2, stderr2) => {
     if (err2) {
       error(`Reload nginx config with error: ${err2}`);
@@ -20,7 +20,7 @@ function startNginx(nginxCmd, filePath) {
       console.error(stdout2);
       console.error('STDERR: ----------------------------------------------');
       console.error(stderr2);
-      process.exit(4);
+      reject(new Error(`Reload nginx config with error: ${err2}`));
       return;
     }
 
@@ -29,25 +29,28 @@ function startNginx(nginxCmd, filePath) {
     console.log('STDERR: ----------------------------------------------');
     console.log(stderr2);
     info('Reload success.');
+    resolve();
   });
 }
 
 function validAndStartNginx(nginxCmd, filePath) {
   info('Starting to validate nginx.conf');
-  childProcess.exec(`"${nginxCmd}" -t -c ${filePath}`, (err, stdout, stderr) => {
-    if (err) {
-      error('Validate nginx.conf failed with errors: --------------');
-      console.error(err);
-      console.error('STDOUT: ----------------------------------------------');
-      console.error(stdout);
-      console.error('STDERR: ----------------------------------------------');
-      console.error(stderr);
-      process.exit(3);
-      return;
-    }
+  return new Promise((resolve, reject) => {
+    childProcess.exec(`"${nginxCmd}" -t -c ${filePath}`, (err, stdout, stderr) => {
+      if (err) {
+        error('Validate nginx.conf failed with errors: --------------');
+        console.error(err);
+        console.error('STDOUT: ----------------------------------------------');
+        console.error(stdout);
+        console.error('STDERR: ----------------------------------------------');
+        console.error(stderr);
+        reject(new Error('Validate nginx.conf failed with errors'));
+        return;
+      }
 
-    info('Validate success, reload nginx ...');
-    startNginx(nginxCmd, filePath);
+      info('Validate success, reload nginx ...');
+      startNginx(nginxCmd, filePath, resolve, reject);
+    });
   });
 }
 
@@ -65,7 +68,7 @@ async function start(nginxTemplateFile) {
   }
 
   info('ENV:');
-  info(JSON.stringify(env));
+  info(JSON.stringify(env, null, '  '));
   const ends = _.map(
     _.filter(
       _.toPairs(env),
@@ -113,11 +116,14 @@ location ${end[0] === 'web' ? '/' : `/api/${end[0]}/`} {
   await fs.writeFile(filePath, nginxFile, { encoding: 'utf8' });
 
   info('Starting nginx ...');
-  validAndStartNginx(nginxCmd, filePath);
+  return validAndStartNginx(nginxCmd, filePath);
 }
 
 if (process.argv.length < 2) {
   console.log(`Usage: ${__filename} <nginx_template.conf>`);
   process.exit(1);
 }
-start(process.argv[2]);
+
+(async () => {
+  await start(process.argv[2]);
+})();

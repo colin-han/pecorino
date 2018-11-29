@@ -2,12 +2,14 @@
 import config from 'config';
 import type { $Response } from 'express';
 import _ from 'lodash';
+import P2mLogger from 'p2m-common-logger';
 
 import { define } from '../utils/api/web-api';
 
 import etcd from './etcd';
 
 const { production, version, env } = config;
+const logger = new P2mLogger('API');
 
 const rootPath = `/${production}/${version}/${env}`;
 
@@ -94,6 +96,7 @@ async function getAllServices() {
 }
 
 export async function registerService(service: string, endDesc: string) {
+  logger.log(`Service ${service} register a new end-point: ${endDesc}`);
   if (service === 'gateway') {
     return etcd.set(`${rootPath}/privs/gateway`, endDesc);
   }

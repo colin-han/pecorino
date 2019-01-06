@@ -66,7 +66,9 @@ async function initForOneService(filename, servicePath, defaults) {
     }
 
     const [, priv, key, value] = s;
-    const formattedValue = _.template(value)({ env: priv ? defaults.privs : defaults.props });
+
+    const currentEnv = priv ? defaults.privs : defaults.props;
+    const formattedValue = _.template(value)({ env: currentEnv });
 
     const keyPath = `${servicePath}/${priv ? 'privs' : 'props'}/${key}`;
     await etcd.set(keyPath, formattedValue, { prevExist: false })
@@ -120,10 +122,15 @@ async function init() {
   if (await stat.isDirectory()) {
     const files = await fs.readdir(initFolder);
     if (files) {
+      const systemInit = _.find(files, f => /^(.*\/)?_\.env/.test(f));
+      if (systemInit) {
+        await initForOneService(systemInit, getRootFolder('_'), {});
+      }
+
       const defaults = await getDefaultSetting();
       await _.reduce(files, async (p, file) => {
         await p;
-        const match = /^(.*\/)?([a-z\-_.]+).env$/.exec(file);
+        const match = /^(.*\/)?([a-z][a-z\-_.]+)\.env$/.exec(file);
         if (!match) {
           logger.warn(`Unknown script "${file}" found in init folder.`);
           return;

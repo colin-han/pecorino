@@ -6,6 +6,7 @@ const { URL } = require('url');
 const chalk = require('chalk');
 const childProcess = require('child_process');
 const { initEnv } = require('pecorino-client');
+const config = require('config');
 
 function info(message) {
   console.log(chalk.cyan(message));
@@ -29,13 +30,12 @@ const { argv } = yargs
   .alias('f', 'file')
   .array('require')
   .alias('r', 'require')
-  .alias('l', 'register')
-  .count('verbose')
-  .alias('v', 'verbose')
-  .demandOption(['m', 's', 'f']);
+  .alias('l', 'register');
 
-const master = new URL(argv.master);
-const { serviceId, my, file, register } = argv;
+const settings = { ...config.pecorino, ...argv };
+
+const master = new URL(settings.master);
+const { serviceId, my, file, register } = settings;
 
 let pid;
 

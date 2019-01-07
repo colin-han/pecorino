@@ -4,6 +4,7 @@ const yargs = require('yargs');
 const chalk = require('chalk');
 const childProcess = require('child_process');
 const { initEnv } = require('pecorino-client');
+const config = require('config');
 
 function info(message) {
   console.log(chalk.cyan(message));
@@ -19,10 +20,10 @@ const { argv } = yargs
          <your commands ...>
   `)
   .alias('m', 'master')
-  .alias('s', 'serviceId')
-  .demandOption(['m', 's']);
+  .alias('s', 'serviceId');
 
-const { serviceId } = argv;
+const settings = { ...config.pecorino, ...argv };
+const { serviceId, master } = settings;
 
 let pid;
 
@@ -44,7 +45,7 @@ function startService() {
 function start() {
   info(`Prepare to starting the service "${serviceId}"...`);
 
-  initEnv(argv.master, serviceId)
+  initEnv(master, serviceId)
     .then(() => {
       startService();
     })

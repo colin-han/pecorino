@@ -124,7 +124,7 @@ async function init() {
     if (files) {
       const systemInit = _.find(files, f => /^(.*\/)?_\.env/.test(f));
       if (systemInit) {
-        await initForOneService(systemInit, getRootFolder('_'), {});
+        await initForOneService(path.resolve(initFolder, systemInit), getRootFolder('_'), {});
       }
 
       const defaults = await getDefaultSetting();

@@ -65,13 +65,13 @@ function restart() {
 
 function startService() {
   const r = [];
-  if (argv.require) {
-    argv.require.forEach(req => {
+  if (settings.require) {
+    settings.require.forEach(req => {
       r.push('-r');
       r.push(req);
     });
   }
-  pid = childProcess.spawn('node', [...r, file, ...argv._], {
+  pid = childProcess.spawn('node', [...r, file, ...settings._], {
     env: process.env,
     stdio: 'inherit'
   });
@@ -87,7 +87,7 @@ function startService() {
 function start() {
   info(`Prepare to starting the service "${serviceId}"...`);
 
-  initEnv(argv.master, serviceId)
+  initEnv(settings.master, serviceId)
     .then(() => {
       startService();
     })

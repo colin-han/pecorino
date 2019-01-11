@@ -1,0 +1,32 @@
+stages:
+- build
+- package
+
+pkg-server-latest:
+  stage: package
+  tags:
+  - docker-node
+  - hw
+  script:
+  - docker login -u ${DOCKER_REGISTRY_USERNAME} -p ${DOCKER_REGISTRY_PASSWORD} ${DOCKER_REGISTRY}
+  - cd pecorino-server
+  - yarn build
+  - docker build . -t ${DOCKER_REGISTRY_URL}/pecorino:latest
+  - docker push ${DOCKER_REGISTRY_URL}/pecorino:latest
+  only:
+  - master
+
+pkg-server-tags:
+  stage: package
+  tags:
+  - docker-node
+  - hw
+  script:
+  - docker login -u ${DOCKER_REGISTRY_USERNAME} -p ${DOCKER_REGISTRY_PASSWORD} ${DOCKER_REGISTRY}
+  - cd pecorino-server
+  - yarn build
+  - docker build . -t ${DOCKER_REGISTRY_URL}/pecorino:${CI_COMMIT_REF_NAME}
+  - docker push ${DOCKER_REGISTRY_URL}/pecorino:${CI_COMMIT_REF_NAME}
+  except:
+  - master
+

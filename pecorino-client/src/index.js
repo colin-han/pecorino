@@ -102,10 +102,10 @@ export async function register(pecorinoAddr, service, end) {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: {
+    body: JSON.stringify({
       service,
       end,
-    }
+    })
   });
 
   if (!res.ok) {

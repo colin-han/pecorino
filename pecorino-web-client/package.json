@@ -1,8 +1,8 @@
 {
-  "name": "pecorino-cli",
-  "version": "1.3.5",
-  "description": "CLI from pecorino.",
-  "main": "dist/index.js",
+  "name": "pecorino-client",
+  "version": "1.4.0",
+  "description": "Client to get config from pecorino.",
+  "main": "dist/browser.js",
   "author": "Colin Han <biz@colinhan.info>",
   "license": "MIT",
   "repository": "https://github.com/colin-han/pecorino.git",
@@ -21,7 +21,7 @@
     "lint": "eslint .",
     "flow": "echo OK!"
   },
-  "bin": "dist/index.js",
+  "bin": "index.js",
   "lint-staged": {
     "*.js": [
       "yarn eslint --fix",
@@ -37,11 +37,7 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
-    "chalk": "^2.4.1",
-    "config": "^3.0.1",
-    "node-fetch": "^2.3.0",
-    "pecorino-client": "^1.3.5",
-    "yargs": "^12.0.5"
+    "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.5",

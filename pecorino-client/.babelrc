@@ -8,11 +8,8 @@
       "@babel/preset-env",
       {
         "targets": {
-          "node": 8,
-          "browsers": "last 2 versions"
-        },
-        "useBuiltIns": "usage",
-        "modules": "umd"
+          "node": 8
+        }
       }
     ]
   ],

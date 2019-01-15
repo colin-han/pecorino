@@ -280,6 +280,15 @@ chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.1, chalk@^2.4.1:
     escape-string-regexp "^1.0.5"
     supports-color "^5.3.0"
 
+chalk@^2.4.2:
+  version "2.4.2"
+  resolved "https://registry.npmjs.org/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
+  integrity sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==
+  dependencies:
+    ansi-styles "^3.2.1"
+    escape-string-regexp "^1.0.5"
+    supports-color "^5.3.0"
+
 chardet@^0.7.0:
   version "0.7.0"
   resolved "http://registry.npm.taobao.org/chardet/download/chardet-0.7.0.tgz#90094849f0937f2eedc2425d0d28a9e5f0cbad9e"
@@ -1774,10 +1783,10 @@ nice-try@^1.0.4:
   resolved "http://registry.npm.taobao.org/nice-try/download/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
   integrity sha1-ozeKdpbOfSI+iPybdkvX7xCJ42Y=
 
-node-fetch@^2.2.1:
-  version "2.2.1"
-  resolved "http://registry.npm.taobao.org/node-fetch/download/node-fetch-2.2.1.tgz#1fe551e0ded6c45b3b3b937d0fb46f76df718d1e"
-  integrity sha1-H+VR4N7WxFs7O5N9D7Rvdt9xjR4=
+node-fetch@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.npmjs.org/node-fetch/-/node-fetch-2.3.0.tgz#1a1d940bbfb916a1d3e0219f037e89e71f8c5fa5"
+  integrity sha512-MOd8pV3fxENbryESLgVIeaGKrdl+uaYhCSSVkjeOb/31/njTpcis5aWfdqgNlHIrKOLRbMnfPINPOML2CIFeXA==
 
 normalize-package-data@^2.3.2:
   version "2.4.0"
@@ -2051,12 +2060,16 @@ path-type@^2.0.0:
   dependencies:
     pify "^2.0.0"
 
-pecorino-client@^1.3.5:
-  version "1.3.5"
-  resolved "https://registry.npmjs.org/pecorino-client/-/pecorino-client-1.3.5.tgz#5477ccf31d02e9a4a9620dd0b3b83f740eb55944"
-  integrity sha512-r7cMoKgVHWeUNxAoPTikFEKEIsCahpovJxpcSpnh8xucRmq+jS58f4Y8Gu4enVzplzvsEhZjU8kUvw2B1qYgug==
+pecorino-client@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.npmjs.org/pecorino-client/-/pecorino-client-1.4.0.tgz#e960309318d5bd71a45b8d73af07c96d650255d7"
+  integrity sha512-MLO6M4ShUlcU2Hnigqo/6+CUEWKfErkIFzpwN/OeVdgTnSQp3k8TFh4kUZViS+PBZPPt7Ok1Vb1fwWJUhwsJQg==
   dependencies:
     "@babel/polyfill" "^7.0.0"
+    chalk "^2.4.2"
+    fs-extra "^7.0.1"
+    js-yaml "^3.12.1"
+    node-fetch "^2.3.0"
 
 pify@^2.0.0:
   version "2.3.0"

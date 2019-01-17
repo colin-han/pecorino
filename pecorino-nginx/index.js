@@ -12,8 +12,8 @@ function error(message) {
   console.error(chalk.red(message));
 }
 
-function startNginx(nginxCmd, filePath, resolve, reject) {
-  childProcess.exec(`"${nginxCmd}" -c "${filePath}"`, (err2, stdout2, stderr2) => {
+function startNginx(nginxCmd, filePath, pidFile, resolve, reject) {
+  childProcess.exec(`"${nginxCmd}" -c "${filePath}"`, async (err2, stdout2, stderr2) => {
     if (err2) {
       error(`Reload nginx config with error: ${err2}`);
       console.error('STDOUT: ----------------------------------------------');
@@ -29,11 +29,28 @@ function startNginx(nginxCmd, filePath, resolve, reject) {
     console.log('STDERR: ----------------------------------------------');
     console.log(stderr2);
     info('Reload success.');
-    resolve();
+
+    try {
+      const pid = await fs.readFile(pidFile);
+      childProcess.exec(`tail --pid=${pid} -f /dev/null`, (err3, stdout3, stderr3) => {
+        if (err3) {
+          error(`Waiting for pid failed with error: ${err3}`);
+          console.error('STDOUT: ----------------------------------------------');
+          console.error(stdout3);
+          console.error('STDERR: ----------------------------------------------');
+          console.error(stderr3);
+          reject(new Error(`Reload nginx config with error: ${err2}`));
+        }
+        info('Nginx process exited.');
+        resolve();
+      });
+    } catch (err) {
+      console.log(`Waiting for pid failed with error: ${err.stack}`);
+    }
   });
 }
 
-function validAndStartNginx(nginxCmd, filePath) {
+function validAndStartNginx(nginxCmd, filePath, pidFile) {
   info('Starting to validate nginx.conf');
   return new Promise((resolve, reject) => {
     childProcess.exec(`"${nginxCmd}" -t -c ${filePath}`, (err, stdout, stderr) => {
@@ -49,7 +66,7 @@ function validAndStartNginx(nginxCmd, filePath) {
       }
 
       info('Validate success, reload nginx ...');
-      startNginx(nginxCmd, filePath, resolve, reject);
+      startNginx(nginxCmd, filePath, pidFile, resolve, reject);
     });
   });
 }
@@ -106,6 +123,9 @@ location ${end[0] === 'web' ? '/' : `/api/${end[0]}/`} {
   )).join('\n');
 
   const template = await fs.readFile(path.resolve(nginxTemplateFile), { encoding: 'utf8' });
+  const pidConfig = /^\s*pid\s+([a-zA-Z0-9._/]+)\s*;\s*$/m.exec(template);
+  const pidFile = pidConfig ? pidConfig[1] : '/var/run/nginx.pid';
+
   const nginxFile = _.template(template)({
     env: process.env,
     pecorino: {
@@ -116,7 +136,7 @@ location ${end[0] === 'web' ? '/' : `/api/${end[0]}/`} {
   await fs.writeFile(filePath, nginxFile, { encoding: 'utf8' });
 
   info('Starting nginx ...');
-  return validAndStartNginx(nginxCmd, filePath);
+  return validAndStartNginx(nginxCmd, filePath, pidFile);
 }
 
 if (process.argv.length < 2) {

@@ -1,6 +1,6 @@
 {
   "name": "pecorino-client",
-  "version": "1.4.0",
+  "version": "1.4.3",
   "description": "Client to get config from pecorino.",
   "main": "dist/browser.js",
   "author": "Colin Han <biz@colinhan.info>",

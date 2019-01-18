@@ -4,6 +4,7 @@ const childProcess = require('child_process');
 const _ = require('lodash');
 const { promises: fs } = require('fs');
 const path = require('path');
+const dns = require('dns');
 
 function info(message) {
   console.log(chalk.cyan(message));
@@ -71,6 +72,25 @@ function validAndStartNginx(nginxCmd, filePath, pidFile) {
   });
 }
 
+async function getDockerHost() {
+  return new Promise((resolve, reject) => {
+    // Check if the docker run on mac system, if so, use 'host.docker.internal'.
+    dns.lookup('host.docker.internal', (err) => {
+      if (!err) {
+        resolve('host.docker.internal');
+      } else {
+        childProcess.exec('route | awk \'/default/ { print $2 }\'', (err2, stdout, stderr) => {
+          if (err) {
+            reject(new Error(`Get DOCKER_HOST failed with error: ${err2}. \n stderr: \n${stderr}\n stdout: \n${stdout}`));
+          } else {
+            resolve(stdout);
+          }
+        });
+      }
+    });
+  });
+}
+
 async function start(nginxTemplateFile) {
   const { env } = process;
   const nginxCmd = env.NGINX || 'nginx';
@@ -86,23 +106,23 @@ async function start(nginxTemplateFile) {
 
   info('ENV:');
   info(JSON.stringify(env, null, '  '));
-  const ends = _.map(
+  const ends = await Promise.all(_.map(
     _.filter(
       _.toPairs(env),
       ([name]) => name.indexOf('PECORINO_ENDS_') === 0
     ),
-    ([name, value]) => ([
+    async ([name, value]) => ([
       name.substring(14),
-      value.split(',').map(end => {
+      await Promise.all(value.split(',').map(async end => {
         const parts = end.split(':');
         return {
-          ip: parts[0] === '$DOCKER_HOST' ? env.DOCKER_HOST : parts[0],
+          ip: parts[0] === '$DOCKER_HOST' ? await getDockerHost() : parts[0],
           port: parts[1],
           role: parts[2] || 'api'
         };
-      })
+      }))
     ])
-  );
+  ));
 
   info('End-points is found as following: -----------------');
   info(JSON.stringify(ends, null, '  '));

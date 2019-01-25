@@ -1,6 +1,6 @@
 {
   "name": "pecorino-nginx",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "Tools to manage ngixn based on pecorino-mon.",
   "main": "index.js",
   "author": "Colin Han <biz@colinhan.info>",

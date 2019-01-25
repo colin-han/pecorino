@@ -81,17 +81,28 @@ loadConfig(config, _.assign(_.omit(argv, ['config', '_']), { commands }))
       }
     }
     function startService() {
-      const r = [];
-      if (settings.require) {
-        settings.require.forEach(req => {
-          r.push('-r');
-          r.push(req);
+      const [arg0, ...args] = commands;
+      if (/^.*\.js$/.test(arg0)) {
+        // It is js file.
+        const r = [];
+        if (settings.require) {
+          settings.require.forEach(req => {
+            r.push('-r');
+            r.push(req);
+          });
+        }
+        pecorinoLog.info(`$ node ${r.join(' ')} ${commands.join(' ')}`);
+        pid = childProcess.spawn('node', _.concat(r, commands), {
+          env: process.env,
+          stdio: 'inherit'
+        });
+      } else {
+        pecorinoLog.info(`$ ${commands.join(' ')}`);
+        pid = childProcess.spawn(arg0, args, {
+          env: process.env,
+          stdio: 'inherit'
         });
       }
-      pid = childProcess.spawn('node', _.concat(r, commands), {
-        env: process.env,
-        stdio: 'inherit'
-      });
       pid.on('exit', (code, signal) => {
         pecorinoLog.info(`Service exit with code ${code}, that is caused by signal "${signal}"`);
         if (signal === 'SIGUSR2') {

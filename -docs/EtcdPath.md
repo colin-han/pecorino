@@ -70,3 +70,18 @@ root
 能被替换为`/props/BAR`而不能被替换为`/privs/BAR`。  
 而`/${production}/${version}/${env}/privs/FOO=<%= env.BAR %>`可以使用两者，有限使
 用`/privs/BAR`。
+
+# 配置文件
+pecorino-client被注入到微服务中使用时，会读取微服务根目录下的`pecorino.yaml`与
+`pecorino.${NODE_ENV}.yaml`文件，从中读取相关参数设置。并将配置保存到当前服务的环境变量中。
+```yaml
+service: <本服务的名字，PECORINO_CONFIG_MY_NAME>
+master: <Pecorino server的地址，PECORINO_CONFIG_MASTER>
+ip: <本服务可以被网关服务访问到的地址, PECORINO_CONFIG_MY_IP>
+port: <本服务可以被网关服务访问到的端口, PECORINO_CONFIG_MY_PORT>
+watch: <是否监听配置变化并重启本服务，仅适用于pecorino-mon>
+register: <是否注册本服务到网关>
+require:
+  - <需要额外引入的package,例如：babel-register>
+```
+这些参数会被加载到env中，如下

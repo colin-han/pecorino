@@ -26,7 +26,14 @@ export async function initEnv(configOrFilePath) {
   log.info(JSON.stringify(conf.results, null, ' '));
   log.info('------------------------------------------------');
 
-  process.env = { ...conf.results, ...process.env };
+  process.env = {
+    ...conf.results,
+    ...process.env,
+    PECORINO_CONFIG_MASTER: settings.master,
+    PECORINO_CONFIG_MY_NAME: settings.service,
+    PECORINO_CONFIG_MY_IP: settings.ip,
+    PECORINO_CONFIG_MY_PORT: settings.port,
+  };
 }
 
 export async function register(configOrFilePath) {

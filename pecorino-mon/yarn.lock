@@ -2041,10 +2041,10 @@ path-type@^2.0.0:
   dependencies:
     pify "^2.0.0"
 
-pecorino-client@^1.4.7:
-  version "1.4.7"
-  resolved "https://registry.npmjs.org/pecorino-client/-/pecorino-client-1.4.7.tgz#402a469fb1be23aabafc3ba17b1f9bd6efaedd2d"
-  integrity sha512-DIxiVH6z5z9w7YTkyzDfXkTH25n/ysa4n0UF35PMGWtvzmcwgJDSvRlY+RU54Apu/GYm3ZAoQcJiDElOMY+hUw==
+pecorino-client@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.npmjs.org/pecorino-client/-/pecorino-client-1.5.0.tgz#213d093b8901e383d081feb23f7836bfc9d68f59"
+  integrity sha512-nc670WIgCzYg0B4BottWScfrkHoTps/YtRoEMSvwSH/plVOTWTBTMtDNfc105nRj4f79uXdHGKezegD1qMfpEQ==
   dependencies:
     "@babel/polyfill" "^7.0.0"
     chalk "^2.4.2"

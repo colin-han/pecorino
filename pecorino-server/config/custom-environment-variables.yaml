@@ -4,3 +4,6 @@ env: CONFIG
 etcd:
   cluster: ETCD_CLUSTER
 port: PORT
+cors:
+  origin:
+    - ACCESS_CONTROL_ALLOW_ORIGIN

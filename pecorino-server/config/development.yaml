@@ -1,9 +1,4 @@
 env: development
 
-cors:
-  origin:
-    - http://localhost:4000
-  credentials: true
-
 etcd:
   cluster: localhost:2379

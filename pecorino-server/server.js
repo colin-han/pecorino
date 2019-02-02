@@ -39,8 +39,9 @@ fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
 app.use(morgan('combined'));
 app.use('/healthcheck', require('express-healthcheck')());
 
-if (config.cors) {
-  app.use(cors(config.cors));
+if (config.cors && config.cors.allowOrigin) {
+  const origins = config.cors.allowOrigin.split(/\s*;\s*/);
+  app.use(cors({ origin: origins, credentials: true }));
 }
 
 app.use(compression());

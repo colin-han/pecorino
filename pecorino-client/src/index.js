@@ -20,20 +20,22 @@ export async function initEnv(configOrFilePath) {
   if (!res.ok) {
     throw new Error(`Assess failed with ${res.status}: ${res.statusText}`);
   }
-  const conf = await res.json();
-  log.info(`Got the configurations from comfit. then starting the service "${settings.service}"...`);
-  log.info('Config is: -------------------------------------');
-  log.info(JSON.stringify(conf.results, null, ' '));
-  log.info('------------------------------------------------');
-
-  process.env = {
-    ...conf.results,
-    ...process.env,
+  const conf = {
+    ...((await res.json()).results),
     PECORINO_CONFIG_MASTER: settings.master,
     PECORINO_CONFIG_MY_NAME: settings.service,
     PECORINO_CONFIG_MY_IP: settings.ip,
     PECORINO_CONFIG_MY_PORT: settings.port,
   };
+  process.env = {
+    ...conf,
+    ...process.env,
+  };
+
+  log.info(`Got the configurations from comfit. then starting the service "${settings.service}"...`);
+  log.info('Config is: -------------------------------------');
+  log.info(JSON.stringify(process.env, null, ' '));
+  log.info('------------------------------------------------');
 }
 
 export async function register(configOrFilePath) {

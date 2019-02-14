@@ -2,7 +2,7 @@
 const chalk = require('chalk');
 const childProcess = require('child_process');
 const _ = require('lodash');
-const { promises: fs } = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const dns = require('dns');
 

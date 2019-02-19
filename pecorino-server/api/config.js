@@ -1,6 +1,5 @@
 // @flow
 import config from 'config';
-import type { $Response } from 'express';
 import _ from 'lodash';
 import P2mLogger from 'p2m-common-logger';
 
@@ -13,24 +12,22 @@ const logger = new P2mLogger('API');
 
 const rootPath = `/${production}/${version}/${env}`;
 
-async function getProps(res: $Response, type: 'prop' | 'priv', service: string, prop: string) {
+export async function getProps(type: 'prop' | 'priv', service: string, prop: string) {
   const propName = prop.toUpperCase();
 
-  const propPath = `${rootPath}/${service}/${type}s/${propName}`;
+  const propPath = `${rootPath}/services/${service}/${type}s/${propName}`;
   const r = await etcd.get(propPath);
   if (r && r.node && r.node.value) {
-    res.json({ success: true, isNull: false, value: r.node.value });
-    return;
+    return r.node.value;
   }
 
   const basePath = `${rootPath}/${type}s/${propName}`;
   const r2 = await etcd.get(basePath);
   if (r2 && r.node && r.node.value) {
-    res.json({ success: true, isNull: false, value: r.node.value });
-    return;
+    return r.node.value;
   }
 
-  res.json({ success: true, isNull: true });
+  return null;
 }
 
 async function getOriginProps(propPath, results) {
@@ -216,7 +213,7 @@ define(
       params: { prop, service },
     } = (req: any);
 
-    await getProps(res, 'prop', service, prop);
+    res.json({ success: true, value: await getProps('prop', service, prop) });
   }
 );
 
@@ -236,7 +233,7 @@ define(
       params: { prop, service },
     } = (req: any);
 
-    await getProps(res, 'priv', service, prop);
+    res.json({ success: true, value: await getProps('priv', service, prop) });
   }
 );
 

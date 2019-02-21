@@ -13,6 +13,7 @@ const logger = new P2mLogger('JWT');
 
 export default function (app: $Application) {
   let slot = null;
+  logger.log('Starting to get ENCRYPT_SALT from pecorino');
   const pms = getProps('priv', 'pecorino', 'ENCRYPT_SALT')
     .then(salt => {
       if (!salt) {
@@ -54,7 +55,7 @@ export default function (app: $Application) {
         }
       });
 
-      return (req, res, next) => jwt1(req, res, (q, s) => jwt2(q, s, next));
+      return (req, res, next) => jwt1(req, res, () => jwt2(req, res, next));
     })
     .catch((err) => (req, res) => {
       logger.log(`Get ENCRYPT_SALT with error: ${err}`);

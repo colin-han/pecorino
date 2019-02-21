@@ -16,15 +16,19 @@ export async function getProps(type: 'prop' | 'priv', service: string, prop: str
   const propName = prop.toUpperCase();
 
   const propPath = `${rootPath}/services/${service}/${type}s/${propName}`;
-  const r = await etcd.get(propPath);
-  if (r && r.node && r.node.value) {
-    return r.node.value;
+  logger.log(`Get props from ${propPath}`);
+  const r = await etcd.get(propPath).catch(() => undefined);
+  logger.log(`Got ${r}`)
+  if (r && r.body && r.body.node && r.body.node.value) {
+    return r.body.node.value;
   }
 
   const basePath = `${rootPath}/${type}s/${propName}`;
-  const r2 = await etcd.get(basePath);
-  if (r2 && r.node && r.node.value) {
-    return r.node.value;
+  logger.log(`Get props from ${basePath}`);
+  const r2 = await etcd.get(basePath).catch(() => undefined);
+  logger.log(`Got ${r2}`)
+  if (r2 && r2.body && r2.body.node && r2.body.node.value) {
+    return r2.body.node.value;
   }
 
   return null;
